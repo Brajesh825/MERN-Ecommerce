@@ -18,3 +18,41 @@ exports.getAllProducts = async (req, res) => {
     products,
   });
 };
+
+// Update Prodcuct -- Admin
+exports.updateProduct = async (req, res) => {
+  let product = Product.findById(req.params.id);
+  if (!product) {
+    return res.status(500).json({
+      success: false,
+      message: "Product not found",
+    });
+  }
+
+  product = await Product.findByIdAndUpdate(req.params.id, req.body, {
+    new: true,
+    runValidators: true,
+    useFindAndModify: false,
+  });
+  res.status(200).json({
+    success: true,
+    product,
+  });
+};
+
+// Delete Product -- Admin
+exports.deleteProduct = async (req, res) => {
+  let product = Product.findById(req.params.id);
+  if (!product) {
+    return res.status(500).json({
+      success: false,
+      message: "Product not found",
+    });
+  }
+
+  await Product.deleteOne();
+  res.status(200).json({
+    success: true,
+    message: "Product Deleted Successfully",
+  });
+};
