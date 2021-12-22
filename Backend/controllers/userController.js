@@ -122,3 +122,53 @@ exports.resetPassword = catchAsyncErrors(async (req, res, next) => {
   await user.save();
   sendToken(user, 200, res);
 });
+
+// Get User Details
+exports.getUserDetails = catchAsyncErrors(async (req, res, next) => {
+  const user = await User.findById(req.user.id);
+  res.status(200).json({
+    success: true,
+    user,
+  });
+});
+
+// Update User Password
+exports.updatePassword = catchAsyncErrors(async (req, res, next) => {
+  const { oldPassword, newPassword, confirmPassword } = req.body;
+
+  const user = await User.findById(req.user.id).select("+password");
+
+  const isPasswordMatched = await user.comparePassword(oldPassword);
+
+  if (!isPasswordMatched) {
+    return next(new ErrorHander("Invalid email or password", 401));
+  }
+
+  if (newPassword != confirmPassword) {
+    new ErrorHandler("Password does not match", 400);
+  }
+
+  user.password = newPassword;
+
+  await user.save();
+
+  sendToken(user, 200, res);
+});
+
+// Update User Profile
+exports.updateProfile = catchAsyncErrors(async (req, res, next) => {
+  const newUserData = { name: req.body.name, email: req.body.email };
+
+  // We will add cloudinar later
+
+  const user = await User.findByIdAndUpdate(req.user.id, newUserData, {
+    new: true,
+    runValidators: true,
+    useFindAndModify: false,
+  });
+
+  res.status(200).json({
+    success: true,
+    user,
+  });
+});
